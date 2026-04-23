@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookAlike — Find the person living a life like yours</title>
+  <meta name="description" content="Every day, one match. Drop your Instagram — in 9 minutes we email you one real person who has walked a remarkably similar path." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="LookAlike — Find the person living a life like yours" />
+  <meta property="og:description" content="Every day, one match. Drop your Instagram link and we’ll email you the one person who shares your exact mindset." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="LookAlike — Find the person living a life like yours" />
+  <meta name="twitter:description" content="One person. Every day. Someone who has walked a life like yours." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#080910;--bg-card:#0d0d18;--surface:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.08);--border-hi:rgba(255,255,255,.13);
+      --text:#f0f0f5;--text-2:#9898b8;--text-3:rgba(255,255,255,.28);
+      --accent-a:#7c3aed;--accent-b:#c026d3;
+      --grad:linear-gradient(135deg,#7c3aed,#c026d3);
+      --red:#f87171;
+      --font-d:'Playfair Display',Georgia,serif;
+      --font-ui:'Inter',system-ui,sans-serif;
+      --ease:cubic-bezier(.4,0,.2,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-ui);font-size:16px;line-height:1.6;min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+    /* Blobs */
+    .ambient{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+    .blob{position:absolute;border-radius:50%;filter:blur(110px);opacity:.1}
+    .blob-v{width:680px;height:680px;background:var(--accent-a);top:-200px;left:-180px;animation:pulse 18s ease-in-out infinite}
+    .blob-f{width:540px;height:540px;background:var(--accent-b);bottom:-100px;right:-140px;animation:pulse 22s ease-in-out infinite reverse}
+    @keyframes pulse{0%,100%{transform:scale(1) translate(0,0)}50%{transform:scale(1.1) translate(30px,-30px)}}
+
+    .container{max-width:680px;margin:0 auto;padding:0 28px;position:relative;z-index:1}
+
+    /* HERO */
+    .hero{min-height:100vh;display:flex;align-items:center;padding:96px 0 72px;text-align:center}
+
+    .wordmark{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--text-2);margin-bottom:52px}
+    .dot{display:block;width:6px;height:6px;border-radius:50%;background:var(--grad)}
+
+    .headline{font-family:var(--font-d);font-size:clamp(50px,9vw,86px);font-weight:800;line-height:1.06;letter-spacing:-.02em;margin-bottom:26px}
+    .accent{font-style:italic;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+    .tagline{font-size:18px;font-weight:300;color:var(--text-2);line-height:1.75;max-width:440px;margin:0 auto 52px;letter-spacing:.01em}
+
+    /* CARD */
+    .card{background:var(--bg-card);border:1px solid var(--border-hi);border-radius:20px;padding:44px 48px 40px;text-align:left;box-shadow:0 32px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04) inset}
+    @media(max-width:520px){.card{padding:28px 22px 24px}}
+
+    .legend{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:28px}
+    .field{margin-bottom:22px}
+    .field label{display:block;font-size:13px;font-weight:500;color:var(--text-2);margin-bottom:9px;letter-spacing:.02em}
+    input[type=url],input[type=email]{display:block;width:100%;padding:15px 18px;background:rgba(255,255,255,.04);border:1px solid var(--border-hi);border-radius:8px;color:var(--text);font-family:var(--font-ui);font-size:15px;outline:none;transition:border-color .18s var(--ease),box-shadow .18s var(--ease)}
+    input::placeholder{color:rgba(255,255,255,.17)}
+    input:focus{border-color:var(--accent-a);box-shadow:0 0 0 3px rgba(124,58,237,.18)}
+    input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(248,113,113,.14)}
+    .ferr{display:block;color:var(--red);font-size:12.5px;margin-top:7px;min-height:18px}
+
+    .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:17px 24px;margin-top:8px;background:var(--grad);border:none;border-radius:8px;color:#fff;font-family:var(--font-ui);font-size:15px;font-weight:600;letter-spacing:.02em;cursor:pointer;transition:opacity .18s,transform .14s,box-shadow .18s}
+    .btn:hover:not(:disabled){opacity:.87;transform:translateY(-2px);box-shadow:0 14px 40px rgba(124,58,237,.38)}
+    .btn:active:not(:disabled){transform:translateY(0)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .spin{width:17px;height:17px;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .footnote{text-align:center;color:var(--text-3);font-size:12.5px;margin-top:18px}
+
+    /* SUCCESS */
+    .success{text-align:center}
+    .success-kicker{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-a);margin-bottom:14px}
+    .success-h{font-family:var(--font-d);font-size:clamp(26px,5vw,36px);font-weight:700;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px}
+    .success-p{font-size:16px;color:var(--text-2);line-height:1.75;margin-bottom:32px;max-width:380px;margin-left:auto;margin-right:auto}
+    .prog-track{height:3px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden;margin-bottom:10px}
+    .prog-fill{height:100%;width:100%;background:var(--grad);border-radius:100px;transform-origin:left;transition:transform 1s linear}
+    .prog-lbl{font-size:13px;color:var(--text-2);font-variant-numeric:tabular-nums}
+    .success-fn{font-size:13px;color:var(--text-3);margin-top:10px}
+
+    /* STATS */
+    .stats{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:36px}
+    .stat{display:flex;flex-direction:column;align-items:center}
+    .stat-n{font-size:20px;font-weight:700;letter-spacing:-.02em;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-l{font-size:11px;color:var(--text-2);letter-spacing:.04em;text-transform:uppercase}
+    .stat-div{width:1px;height:28px;background:var(--border-hi)}
+
+    /* SECTIONS */
+    .section{padding:88px 0;border-top:1px solid var(--border)}
+    .kicker{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--accent-a);margin-bottom:14px}
+    .sec-title{font-family:var(--font-d);font-size:clamp(26px,4vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-bottom:48px}
+    .sec-intro{font-size:17px;color:var(--text-2);line-height:1.75;max-width:500px;margin-bottom:48px}
+    .sec-intro em{font-style:italic;color:var(--text)}
+
+    /* STEPS */
+    .steps{list-style:none}
+    .step{padding:30px 0;border-bottom:1px solid var(--border);display:grid;grid-template-columns:48px 1fr;column-gap:22px}
+    .step:last-child{border-bottom:none}
+    .step-num{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;padding-top:4px}
+    .step-title{font-family:var(--font-d);font-size:19px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+    .step-body{font-size:14px;color:var(--text-2);line-height:1.7;grid-column:2}
+
+    /* SIGNALS */
+    .sig-grid{list-style:none;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+    @media(max-width:520px){.sig-grid{grid-template-columns:1fr}}
+    .sig-item{background:var(--bg-card);padding:26px 24px;transition:background .18s}
+    .sig-item:hover{background:rgba(124,58,237,.06)}
+    .sig-icon{font-size:20px;line-height:1;margin-bottom:8px;display:block;opacity:.7}
+    .sig-name{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-.01em;display:block;margin-bottom:4px}
+    .sig-desc{font-size:13px;color:var(--text-2);line-height:1.5}
+
+    /* FOOTER */
+    .footer{border-top:1px solid var(--border);padding:30px 0}
+    .footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+    .footer-brand{font-size:11px;font-weight:600;letter-spacing:.2em;color:var(--text-3)}
+    .footer-copy{font-size:13px;color:var(--text-3);font-style:italic}
+  </style>
+</head>
+<body>
+
+<div class="ambient" aria-hidden="true">
+  <div class="blob blob-v"></div>
+  <div class="blob blob-f"></div>
+</div>
+
+<!-- HERO -->
+<main class="hero">
+  <div class="container">
+
+    <div class="wordmark">
+      <span class="dot"></span>
+      LOOKALIKE
+    </div>
+
+    <h1 class="headline">
+      Find the person<br />
+      living a life<br />
+      <em class="accent">like&nbsp;yours.</em>
+    </h1>
+
+    <p class="tagline">
+      One person. Every day. A real human who has<br />
+      walked a remarkably similar path.
+    </p>
+
+    <!-- FORM CARD -->
+    <div class="card">
+
+      <form id="form" novalidate>
+        <p class="legend">Your details</p>
+
+        <div class="field">
+          <label for="ig">Instagram profile URL</label>
+          <input type="url" id="ig" name="instagram_url" placeholder="https://instagram.com/yourname" autocomplete="off" spellcheck="false" />
+          <span class="ferr" id="ig-err"></span>
+        </div>
+
+        <div class="field">
+          <label for="em">Your email &mdash; where we’ll send the match</label>
+          <input type="email" id="em" name="email" placeholder="you@example.com" />
+          <span class="ferr" id="em-err"></span>
+        </div>
+
+        <button type="submit" class="btn" id="btn">
+          <span id="btn-label">Find My Look-alike</span>
+          <span id="btn-loading" hidden style="display:flex;align-items:center;gap:8px">
+            <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+            Analysing…
+          </span>
+        </button>
+
+        <p class="footnote">Public data only &nbsp;&middot;&nbsp; Your email is never shared &nbsp;&middot;&nbsp; One match per day</p>
+      </form>
+
+      <!-- SUCCESS -->
+      <div id="success" hidden>
+        <p class="success-kicker">You’re in.</p>
+        <h2 class="success-h">We’re searching<br />for your look-alike.</h2>
+        <p class="success-p">Expect an email within <strong>9&nbsp;minutes</strong> with one Instagram or LinkedIn profile &mdash; the person who matches your journey most closely.</p>
+        <div style="margin-bottom:16px">
+          <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
+          <div class="prog-lbl" id="prog-lbl">9:00 remaining</div>
+        </div>
+        <p class="success-fn">Nothing? Check your spam folder.</p>
+      </div>
+
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="stat-n">9 min</span><span class="stat-l">or less</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-n">1</span><span class="stat-l">match per day</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-n">100%</span><span class="stat-l">public data</span></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- HOW IT WORKS -->
+<section class="section">
+  <div class="container">
+    <p class="kicker">How it works</p>
+    <h2 class="sec-title">Three steps. Nine minutes.</h2>
+    <ol class="steps" role="list">
+      <li class="step">
+        <span class="step-num">01</span>
+        <div>
+          <h3 class="step-title">You share your Instagram</h3>
+          <p class="step-body">No login. No password. Just the URL of your public profile and your email address.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num">02</span>
+        <div>
+          <h3 class="step-title">We read your story</h3>
+          <p class="step-body">We analyse your public posts &mdash; where you’ve travelled, music and films you follow, your hashtags and engagement &mdash; and build your interest fingerprint.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num">03</span>
+        <div>
+          <h3 class="step-title">One name. In your inbox.</h3>
+          <p class="step-body">Within 9 minutes we email you a single profile &mdash; Instagram or LinkedIn &mdash; of the one real person whose life mirrors yours most closely. That’s it.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- SIGNALS -->
+<section class="section">
+  <div class="container">
+    <p class="kicker">The signals</p>
+    <h2 class="sec-title">Your life, decoded.</h2>
+    <p class="sec-intro">We look at every dimension that defines a person’s taste and journey &mdash; not just what you post, but <em>how</em> you engage with the world.</p>
+    <ul class="sig-grid" role="list">
+      <li class="sig-item"><span class="sig-icon">✈</span><span class="sig-name">Places you’ve been</span><span class="sig-desc">Location tags, travel hashtags, geography of your posts</span></li>
+      <li class="sig-item"><span class="sig-icon">♪</span><span class="sig-name">Music taste</span><span class="sig-desc">Genres, concerts, festivals, artist mentions</span></li>
+      <li class="sig-item"><span class="sig-icon">◻</span><span class="sig-name">Film &amp; cinema</span><span class="sig-desc">Directors, cinephile tags, movie nights, screenings</span></li>
+      <li class="sig-item"><span class="sig-icon">#</span><span class="sig-name">Hashtag world</span><span class="sig-desc">The words you reach for to describe your life</span></li>
+      <li class="sig-item"><span class="sig-icon">◎</span><span class="sig-name">Engagement energy</span><span class="sig-desc">How you connect &mdash; post frequency and reach</span></li>
+      <li class="sig-item"><span class="sig-icon">◈</span><span class="sig-name">Creative interests</span><span class="sig-desc">Art, design, food, sport, tech &mdash; your passion clusters</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container footer-inner">
+    <span class="footer-brand">LOOKALIKE</span>
+    <span class="footer-copy">One connection. Every day.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const form=document.getElementById('form');
+  const btn=document.getElementById('btn');
+  const btnLbl=document.getElementById('btn-label');
+  const btnLd=document.getElementById('btn-loading');
+  const successEl=document.getElementById('success');
+  const progEl=document.getElementById('prog');
+  const progLbl=document.getElementById('prog-lbl');
+
+  function clearErrors(){
+    ['ig','em'].forEach(function(id){
+      document.getElementById(id+'-err').textContent='';
+      document.getElementById(id).classList.remove('err');
+    });
+  }
+  function showErr(id,msg){
+    document.getElementById(id+'-err').textContent=msg;
+    document.getElementById(id).classList.add('err');
+  }
+  function setLoading(on){
+    btn.disabled=on;
+    btnLbl.hidden=on;
+    btnLd.hidden=!on;
+  }
+
+  form.addEventListener('submit',async function(e){
+    e.preventDefault();
+    clearErrors();
+    var ig=document.getElementById('ig').value.trim();
+    var em=document.getElementById('em').value.trim();
+    var ok=true;
+    if(!ig){showErr('ig','Please enter your Instagram profile URL.');ok=false;}
+    else if(!/instagram\.com\/[A-Za-z0-9_.]+/.test(ig)){showErr('ig','Enter a valid Instagram URL e.g. https://instagram.com/yourname');ok=false;}
+    if(!em){showErr('em','Please enter your email address.');ok=false;}
+    else if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){showErr('em','Please enter a valid email address.');ok=false;}
+    if(!ok)return;
+    setLoading(true);
+    // Submit to Formsubmit.co — change the email below to yours
+    try{
+      fetch('https://formsubmit.co/ajax/lookalike.matches@gmail.com',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify({instagram_url:ig,email:em,_subject:'New LookAlike signup — '+ig})
+      }).catch(function(){});
+    }catch(x){}
+    form.hidden=true;
+    successEl.hidden=false;
+    startCountdown(9*60);
+  });
+
+  function startCountdown(total){
+    var remaining=total;
+    (function tick(){
+      var ratio=remaining/total;
+      progEl.style.transform='scaleX('+ratio+')';
+      var m=Math.floor(remaining/60),s=remaining%60;
+      progLbl.textContent=remaining>0?m+':'+String(s).padStart(2,'0')+' remaining':'Done — check your inbox!';
+      if(remaining>0){remaining--;setTimeout(tick,1000);}
+    })();
+  }
+})();
+</script>
+
+</body>
+</html>
