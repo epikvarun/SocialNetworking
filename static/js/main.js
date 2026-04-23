@@ -3,121 +3,109 @@
 (function () {
   const form        = document.getElementById('submit-form');
   const submitBtn   = document.getElementById('submit-btn');
-  const btnText     = submitBtn.querySelector('.btn-text');
-  const btnLoader   = submitBtn.querySelector('.btn-loader');
+  const btnLabel    = submitBtn.querySelector('.btn-label');
+  const btnLoading  = submitBtn.querySelector('.btn-loading');
   const successEl   = document.getElementById('success-state');
-  const barEl       = document.getElementById('countdown-bar');
-  const labelEl     = document.getElementById('countdown-label');
+  const fillEl      = document.getElementById('progress-fill');
+  const labelEl     = document.getElementById('progress-label');
 
-  // ── Helpers ──────────────────────────────────────────────────
+  // ── Utilities ────────────────────────────────────────
   function clearErrors() {
-    document.querySelectorAll('.field-error').forEach(el => (el.textContent = ''));
-    document.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
+    form.querySelectorAll('.field-error').forEach(el => (el.textContent = ''));
+    form.querySelectorAll('input').forEach(el => el.classList.remove('input-error'));
   }
 
-  function showError(fieldName, message) {
-    const errEl = document.getElementById(fieldName + '-error');
-    const input = document.getElementById(fieldName);
-    if (errEl) errEl.textContent = message;
-    if (input) input.classList.add('input-error');
+  function showFieldError(name, msg) {
+    const errEl = document.getElementById(name + '-error');
+    const inp   = document.getElementById(name);
+    if (errEl) errEl.textContent = msg;
+    if (inp)   inp.classList.add('input-error');
   }
 
   function setLoading(on) {
     submitBtn.disabled = on;
-    btnText.hidden = on;
-    btnLoader.hidden = !on;
+    btnLabel.hidden    = on;
+    btnLoading.hidden  = !on;
   }
 
-  // ── Form submit ───────────────────────────────────────────────
+  // ── Form submission ───────────────────────────────────
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     clearErrors();
     setLoading(true);
 
-    const formData = new FormData(form);
-    const csrfToken = formData.get('csrfmiddlewaretoken');
+    const fd   = new FormData(form);
+    const csrf = fd.get('csrfmiddlewaretoken');
 
     let data;
     try {
       const res = await fetch('/submit/', {
-        method: 'POST',
-        body: formData,
-        headers: { 'X-CSRFToken': csrfToken },
+        method:  'POST',
+        body:    fd,
+        headers: { 'X-CSRFToken': csrf },
       });
       data = await res.json();
     } catch (_) {
-      showError('instagram_url', 'Network error — please try again.');
+      showFieldError('instagram_url', 'Network error — please try again.');
       setLoading(false);
       return;
     }
 
     if (data.success) {
-      form.hidden = true;
+      // Slide to success state
+      form.hidden      = true;
       successEl.hidden = false;
       startCountdown(9 * 60);
       pollStatus(data.submission_id);
     } else {
       const errors = data.errors || {};
-      Object.entries(errors).forEach(([field, msg]) => showError(field, msg));
+      Object.entries(errors).forEach(([k, v]) => showFieldError(k, v));
       setLoading(false);
     }
   });
 
-  // ── Countdown ─────────────────────────────────────────────────
-  function startCountdown(totalSeconds) {
-    let remaining = totalSeconds;
+  // ── Countdown progress bar ───────────────────────────
+  function startCountdown(totalSecs) {
+    let remaining = totalSecs;
 
-    function tick() {
-      const progress = remaining / totalSeconds;
-      // bar shrinks left-to-right as time runs out
-      barEl.style.transform = 'scaleX(' + progress + ')';
-
-      const m = Math.floor(remaining / 60);
-      const s = remaining % 60;
-      labelEl.textContent =
-        remaining > 0
-          ? m + ':' + String(s).padStart(2, '0') + ' remaining'
-          : 'Analysis complete — check your inbox!';
+    (function tick() {
+      const ratio = remaining / totalSecs;
+      fillEl.style.transform = 'scaleX(' + ratio + ')';
 
       if (remaining > 0) {
+        const m = Math.floor(remaining / 60);
+        const s = remaining % 60;
+        labelEl.textContent = m + ':' + String(s).padStart(2, '0') + ' remaining';
         remaining -= 1;
         setTimeout(tick, 1000);
+      } else {
+        fillEl.style.transform  = 'scaleX(0)';
+        labelEl.textContent     = 'Analysis complete — check your inbox.';
       }
-    }
-
-    tick();
+    })();
   }
 
-  // ── Status polling ────────────────────────────────────────────
-  function pollStatus(submissionId) {
+  // ── Status polling (every 10 s, up to 12 min) ────────
+  function pollStatus(id) {
     let attempts = 0;
-    const MAX_ATTEMPTS = 60; // 10 minutes at 10s intervals
 
-    const timer = setInterval(async function () {
-      attempts += 1;
-      if (attempts > MAX_ATTEMPTS) {
-        clearInterval(timer);
-        return;
-      }
+    const t = setInterval(async function () {
+      if (++attempts > 72) { clearInterval(t); return; }
 
       let data;
       try {
-        const res = await fetch('/status/' + submissionId + '/');
+        const res = await fetch('/status/' + id + '/');
         data = await res.json();
-      } catch (_) {
-        return; // network blip — keep polling
-      }
+      } catch (_) { return; }
 
-      const done = ['matched', 'waiting', 'failed'];
-      if (done.includes(data.status)) {
-        clearInterval(timer);
-        if (data.status === 'matched' || data.status === 'waiting') {
-          labelEl.textContent = 'Done! Check your inbox now.';
-          barEl.style.transform = 'scaleX(0)';
-        } else {
-          labelEl.textContent = 'Something went wrong — please try again later.';
-        }
+      if (data.status === 'matched' || data.status === 'waiting') {
+        clearInterval(t);
+        fillEl.style.transform = 'scaleX(0)';
+        labelEl.textContent    = 'Done — check your inbox now.';
+      } else if (data.status === 'failed') {
+        clearInterval(t);
+        labelEl.textContent = 'Something went wrong. Please try again later.';
       }
-    }, 10000);
+    }, 10_000);
   }
 })();
