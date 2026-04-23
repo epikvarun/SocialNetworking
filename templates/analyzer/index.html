@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LookAlike — Find Your Real-World Twin</title>
+  <meta name="description" content="Drop your Instagram link. In under 9 minutes we email you the one person in the world who shares your exact mindset." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- ───── HERO ───── -->
+  <section class="hero">
+    <div class="container">
+
+      <span class="badge">One match &middot; Once a day</span>
+
+      <h1 class="headline">
+        Find Your<br />
+        <span class="gradient-text">Look-alike</span>
+      </h1>
+
+      <p class="subheadline">
+        Drop your Instagram link. In under&nbsp;9&nbsp;minutes we analyse your travels,
+        hashtags, music&nbsp;&amp;&nbsp;film taste — then email you the one real person
+        in the world who shares your exact mindset.
+      </p>
+
+      <!-- ── FORM CARD ── -->
+      <div class="card" id="form-card">
+
+        <form id="submit-form" novalidate>
+          {% csrf_token %}
+
+          <div class="field-group">
+            <label for="instagram_url">Instagram Profile URL</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <circle cx="12" cy="12" r="4"/>
+                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+              </svg>
+              <input
+                type="url" id="instagram_url" name="instagram_url"
+                placeholder="https://www.instagram.com/yourname"
+                autocomplete="off" spellcheck="false"
+              />
+            </div>
+            <span class="field-error" id="instagram_url-error"></span>
+          </div>
+
+          <div class="field-group">
+            <label for="email">Your Email — we'll send the match here</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+              <input type="email" id="email" name="email" placeholder="you@example.com" />
+            </div>
+            <span class="field-error" id="email-error"></span>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submit-btn">
+            <span class="btn-text">Find My Look-alike</span>
+            <span class="btn-loader" hidden>
+              <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+              Analysing…
+            </span>
+          </button>
+
+          <p class="privacy-note">
+            We only read public profile data &mdash; your email is never shared or sold.
+          </p>
+        </form>
+
+        <!-- ── SUCCESS STATE ── -->
+        <div id="success-state" hidden>
+          <div class="success-icon">✦</div>
+          <h2>We're on it!</h2>
+          <p class="success-text">
+            Your profile is being analysed right now. Expect an email within
+            <strong>9&nbsp;minutes</strong> with your look-alike's Instagram
+            (or LinkedIn) link.
+          </p>
+          <div class="countdown-wrap">
+            <div class="countdown-bar-track">
+              <div class="countdown-bar" id="countdown-bar"></div>
+            </div>
+            <div class="countdown-label" id="countdown-label">9:00 remaining</div>
+          </div>
+          <p class="success-note">Can't see our email? Check your spam folder.</p>
+        </div>
+
+      </div><!-- /card -->
+
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">9 min</span><span class="stat-lbl">or less</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">1</span><span class="stat-lbl">match per day</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">100%</span><span class="stat-lbl">public data only</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ───── HOW IT WORKS ───── -->
+  <section class="how-it-works">
+    <div class="container">
+      <h2 class="section-title">How it works</h2>
+      <div class="steps">
+
+        <div class="step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <div class="step-number">01</div>
+          <h3>You submit</h3>
+          <p>Enter your public Instagram URL and email. We don't need your password or any login.</p>
+        </div>
+
+        <div class="step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <div class="step-number">02</div>
+          <h3>We analyse</h3>
+          <p>Our engine reads your public posts — hashtags, travel locations, engagement patterns, music &amp; film mentions — to build your interest fingerprint.</p>
+        </div>
+
+        <div class="step">
+          <div class="step-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+          </div>
+          <div class="step-number">03</div>
+          <h3>You get one name</h3>
+          <p>Within 9 minutes you receive a single email with the one person who best mirrors your mindset — their Instagram or LinkedIn profile, and why they matched.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── WHAT WE ANALYSE ───── -->
+  <section class="signals-section">
+    <div class="container">
+      <h2 class="section-title">What we look at</h2>
+      <div class="signals-grid">
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+          Places you've travelled
+        </div>
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19V6l12-3v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Music taste
+        </div>
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+          Film &amp; cinema taste
+        </div>
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          Hashtag interests
+        </div>
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Follower scale
+        </div>
+        <div class="signal-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Engagement style
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───── FOOTER ───── -->
+  <footer class="footer">
+    <div class="container">
+      <p>LookAlike &mdash; one real connection, every day.</p>
+    </div>
+  </footer>
+
+  {% load static %}
+  <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

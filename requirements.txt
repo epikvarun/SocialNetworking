@@ -1,0 +1,8 @@
+Django==4.2.13
+celery==5.3.6
+redis==5.0.3
+instaloader==4.10.3
+scikit-learn==1.4.0
+numpy==1.26.3
+python-dotenv==1.0.0
+django-celery-results==2.5.1

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>We found your look-alike!</title>
+</head>
+<body style="margin:0;padding:0;background:#07070f;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#eeeef8;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#07070f;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+          <!-- Header gradient bar -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#7c3aed,#db2777);height:4px;border-radius:4px 4px 0 0;"></td>
+          </tr>
+
+          <!-- Card body -->
+          <tr>
+            <td style="background:#10101e;border:1px solid rgba(255,255,255,0.08);border-top:none;border-radius:0 0 16px 16px;padding:44px 48px;">
+
+              <!-- Logo / Brand -->
+              <p style="margin:0 0 32px;font-size:13px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;
+                         background:linear-gradient(135deg,#7c3aed,#db2777);-webkit-background-clip:text;
+                         -webkit-text-fill-color:transparent;color:#7c3aed;">
+                LookAlike
+              </p>
+
+              <!-- Icon -->
+              <p style="margin:0 0 16px;font-size:48px;line-height:1;">✦</p>
+
+              <!-- Headline -->
+              <h1 style="margin:0 0 12px;font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1.1;color:#eeeef8;">
+                We found your<br />look-alike.
+              </h1>
+
+              <p style="margin:0 0 32px;font-size:16px;color:#8888aa;line-height:1.7;">
+                Hey{% if instagram_username %} @{{ instagram_username }}{% endif %}, after analysing your public profile,
+                here's the one person who best mirrors your mindset and journey.
+              </p>
+
+              <!-- Match card -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                     style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);
+                            border-radius:12px;margin-bottom:32px;">
+                <tr>
+                  <td style="padding:28px 32px;">
+
+                    <p style="margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#8888aa;">
+                      Your Look-alike
+                    </p>
+
+                    {% if matched_instagram_url %}
+                    <p style="margin:0 0 16px;">
+                      <a href="{{ matched_instagram_url }}"
+                         style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#db2777);
+                                color:#fff;font-size:15px;font-weight:600;text-decoration:none;
+                                padding:12px 24px;border-radius:8px;">
+                        View Instagram Profile &rarr;
+                      </a>
+                    </p>
+                    {% endif %}
+
+                    {% if matched_linkedin_url %}
+                    <p style="margin:0;">
+                      <a href="{{ matched_linkedin_url }}"
+                         style="display:inline-block;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+                                color:#eeeef8;font-size:15px;font-weight:600;text-decoration:none;
+                                padding:12px 24px;border-radius:8px;">
+                        View LinkedIn Profile &rarr;
+                      </a>
+                    </p>
+                    {% endif %}
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Match percentage -->
+              {% if similarity_score %}
+              <p style="margin:0 0 8px;font-size:13px;color:#8888aa;">
+                Match confidence
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;">
+                <tr>
+                  <td style="background:rgba(255,255,255,0.06);border-radius:100px;height:6px;width:100%;">
+                    <div style="background:linear-gradient(135deg,#7c3aed,#db2777);height:6px;
+                                border-radius:100px;width:{{ similarity_score }}%;max-width:100%;"></div>
+                  </td>
+                  <td style="padding-left:12px;font-size:14px;font-weight:700;white-space:nowrap;color:#eeeef8;">
+                    {{ similarity_score }}%
+                  </td>
+                </tr>
+              </table>
+              {% endif %}
+
+              <!-- Why you matched -->
+              {% if match_reasons %}
+              <p style="margin:0 0 12px;font-size:14px;font-weight:600;color:#eeeef8;">
+                Why you matched
+              </p>
+              <ul style="margin:0 0 32px;padding:0;list-style:none;">
+                {% for reason in match_reasons %}
+                <li style="display:flex;align-items:baseline;gap:8px;font-size:14px;color:#8888aa;
+                           line-height:1.6;margin-bottom:8px;">
+                  <span style="color:#7c3aed;font-size:18px;line-height:1;">&#8250;</span>
+                  {{ reason }}
+                </li>
+                {% endfor %}
+              </ul>
+              {% endif %}
+
+              <!-- CTA note -->
+              <p style="margin:0 0 32px;font-size:14px;color:#8888aa;line-height:1.7;
+                        border-left:3px solid #7c3aed;padding-left:16px;">
+                We reached out because your public profiles suggest you've walked similar
+                paths. The rest is up to you — a follow, a message, or just a spark of
+                curiosity.
+              </p>
+
+              <!-- Divider -->
+              <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 28px;" />
+
+              <!-- Footer note -->
+              <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.3);line-height:1.6;">
+                LookAlike &mdash; one real connection, every day.<br />
+                You'll receive your next match tomorrow. We only read public data and
+                never share your email.
+              </p>
+
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
