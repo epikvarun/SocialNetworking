@@ -295,12 +295,18 @@
     else if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){showErr('em','Please enter a valid email address.');ok=false;}
     if(!ok)return;
     setLoading(true);
-    // Submit to Formsubmit.co — change the email below to yours
+    // Forward every signup to Varun at getepik
     try{
-      fetch('https://formsubmit.co/ajax/lookalike.matches@gmail.com',{
+      fetch('https://formsubmit.co/ajax/varun@getepik.in',{
         method:'POST',
         headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify({instagram_url:ig,email:em,_subject:'New LookAlike signup — '+ig})
+        body:JSON.stringify({
+          instagram_url: ig,
+          email: em,
+          _replyto: em,
+          _subject: '🔍 New LookAlike signup — ' + ig,
+          _template: 'table'
+        })
       }).catch(function(){});
     }catch(x){}
     form.hidden=true;
