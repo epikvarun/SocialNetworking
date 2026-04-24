@@ -1,5 +1,5 @@
 [build]
-builder = "NIXPACKS"
+builder = "RAILPACK"
 
 [deploy]
 startCommand = "python manage.py migrate --no-input && python manage.py collectstatic --no-input && gunicorn socialnetworking.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
