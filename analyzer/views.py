@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .models import ProfileSubmission
@@ -18,6 +19,7 @@ def index(request):
     return render(request, 'analyzer/index.html')
 
 
+@csrf_exempt
 @require_POST
 def submit(request):
     instagram_url = request.POST.get('instagram_url', '').strip().rstrip('/')

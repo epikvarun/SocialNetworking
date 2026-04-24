@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: epikvarun-lookalike
+    runtime: python
+    region: oregon
+    plan: free
+    branch: claude/social-profile-analyzer-LWXMB
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input
+    startCommand: python manage.py migrate --no-input && gunicorn socialnetworking.wsgi --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: epikvarun-lookalike.onrender.com,localhost
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        value: "LookAlike <varun@getepik.in>"
+
+databases:
+  - name: lookalike-db
+    plan: free
+    region: oregon
