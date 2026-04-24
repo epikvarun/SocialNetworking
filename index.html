@@ -7,7 +7,7 @@
   <meta name="description" content="Every day, one match. Drop your Instagram — in 9 minutes we email you one real person who has walked a remarkably similar path." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="LookAlike — Find the person living a life like yours" />
-  <meta property="og:description" content="Every day, one match. Drop your Instagram link and we’ll email you the one person who shares your exact mindset." />
+  <meta property="og:description" content="Every day, one match. Drop your Instagram link and we'll email you the one person who shares your exact mindset." />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="LookAlike — Find the person living a life like yours" />
   <meta name="twitter:description" content="One person. Every day. Someone who has walked a life like yours." />
@@ -158,7 +158,7 @@
         </div>
 
         <div class="field">
-          <label for="em">Your email &mdash; where we’ll send the match</label>
+          <label for="em">Your email &mdash; where we'll send the match</label>
           <input type="email" id="em" name="email" placeholder="you@example.com" />
           <span class="ferr" id="em-err"></span>
         </div>
@@ -169,7 +169,7 @@
             <svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
             </svg>
-            Analysing…
+            Analysing&hellip;
           </span>
         </button>
 
@@ -178,8 +178,8 @@
 
       <!-- SUCCESS -->
       <div id="success" hidden>
-        <p class="success-kicker">You’re in.</p>
-        <h2 class="success-h">We’re searching<br />for your look-alike.</h2>
+        <p class="success-kicker">You're in.</p>
+        <h2 class="success-h">We're searching<br />for your look-alike.</h2>
         <p class="success-p">Expect an email within <strong>9&nbsp;minutes</strong> with one Instagram or LinkedIn profile &mdash; the person who matches your journey most closely.</p>
         <div style="margin-bottom:16px">
           <div class="prog-track"><div class="prog-fill" id="prog"></div></div>
@@ -218,14 +218,14 @@
         <span class="step-num">02</span>
         <div>
           <h3 class="step-title">We read your story</h3>
-          <p class="step-body">We analyse your public posts &mdash; where you’ve travelled, music and films you follow, your hashtags and engagement &mdash; and build your interest fingerprint.</p>
+          <p class="step-body">We analyse your public posts &mdash; where you've travelled, music and films you follow, your hashtags and engagement &mdash; and build your interest fingerprint.</p>
         </div>
       </li>
       <li class="step">
         <span class="step-num">03</span>
         <div>
           <h3 class="step-title">One name. In your inbox.</h3>
-          <p class="step-body">Within 9 minutes we email you a single profile &mdash; Instagram or LinkedIn &mdash; of the one real person whose life mirrors yours most closely. That’s it.</p>
+          <p class="step-body">Within 9 minutes we email you a single profile &mdash; Instagram or LinkedIn &mdash; of the one real person whose life mirrors yours most closely. That's it.</p>
         </div>
       </li>
     </ol>
@@ -237,9 +237,9 @@
   <div class="container">
     <p class="kicker">The signals</p>
     <h2 class="sec-title">Your life, decoded.</h2>
-    <p class="sec-intro">We look at every dimension that defines a person’s taste and journey &mdash; not just what you post, but <em>how</em> you engage with the world.</p>
+    <p class="sec-intro">We look at every dimension that defines a person's taste and journey &mdash; not just what you post, but <em>how</em> you engage with the world.</p>
     <ul class="sig-grid" role="list">
-      <li class="sig-item"><span class="sig-icon">✈</span><span class="sig-name">Places you’ve been</span><span class="sig-desc">Location tags, travel hashtags, geography of your posts</span></li>
+      <li class="sig-item"><span class="sig-icon">✈</span><span class="sig-name">Places you've been</span><span class="sig-desc">Location tags, travel hashtags, geography of your posts</span></li>
       <li class="sig-item"><span class="sig-icon">♪</span><span class="sig-name">Music taste</span><span class="sig-desc">Genres, concerts, festivals, artist mentions</span></li>
       <li class="sig-item"><span class="sig-icon">◻</span><span class="sig-name">Film &amp; cinema</span><span class="sig-desc">Directors, cinephile tags, movie nights, screenings</span></li>
       <li class="sig-item"><span class="sig-icon">#</span><span class="sig-name">Hashtag world</span><span class="sig-desc">The words you reach for to describe your life</span></li>
@@ -283,6 +283,8 @@
     btnLd.hidden=!on;
   }
 
+  var BACKEND='https://epikvarun-lookalike.onrender.com';
+
   form.addEventListener('submit',async function(e){
     e.preventDefault();
     clearErrors();
@@ -295,24 +297,49 @@
     else if(!/^[^@]+@[^@]+\.[^@]+$/.test(em)){showErr('em','Please enter a valid email address.');ok=false;}
     if(!ok)return;
     setLoading(true);
-    // Forward every signup to Varun at getepik
+    var fd=new FormData();
+    fd.append('instagram_url',ig);
+    fd.append('email',em);
+    var data;
     try{
-      fetch('https://formsubmit.co/ajax/varun@getepik.in',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Accept':'application/json'},
-        body:JSON.stringify({
-          instagram_url: ig,
-          email: em,
-          _replyto: em,
-          _subject: '🔍 New LookAlike signup — ' + ig,
-          _template: 'table'
-        })
-      }).catch(function(){});
-    }catch(x){}
-    form.hidden=true;
-    successEl.hidden=false;
-    startCountdown(9*60);
+      var res=await fetch(BACKEND+'/submit/',{method:'POST',body:fd});
+      data=await res.json();
+    }catch(err){
+      showErr('ig','Could not reach the server. Please try again in a moment.');
+      setLoading(false);
+      return;
+    }
+    if(data.success){
+      form.hidden=true;
+      successEl.hidden=false;
+      startCountdown(9*60);
+      pollStatus(data.submission_id);
+    }else{
+      var errs=data.errors||{};
+      if(errs.instagram_url)showErr('ig',errs.instagram_url);
+      if(errs.email)showErr('em',errs.email);
+      setLoading(false);
+    }
   });
+
+  function pollStatus(id){
+    var attempts=0;
+    var t=setInterval(async function(){
+      if(++attempts>72){clearInterval(t);return;}
+      try{
+        var res=await fetch(BACKEND+'/status/'+id+'/');
+        var data=await res.json();
+        if(data.status==='matched'||data.status==='waiting'){
+          clearInterval(t);
+          progEl.style.transform='scaleX(0)';
+          progLbl.textContent='Done — check your inbox now.';
+        }else if(data.status==='failed'){
+          clearInterval(t);
+          progLbl.textContent='Something went wrong. Please try again.';
+        }
+      }catch(x){}
+    },10000);
+  }
 
   function startCountdown(total){
     var remaining=total;
