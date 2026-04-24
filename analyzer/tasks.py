@@ -1,21 +1,19 @@
 import logging
-from celery import shared_task
-from django.utils import timezone
+import threading
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=2, default_retry_delay=60)
-def analyze_and_match(self, submission_id: str):
-    """
-    Main pipeline: scrape Instagram profile → build feature vector →
-    find best match → send email → update submission status.
-    Runs within the promised 9-minute window (typically much faster).
-    """
+def _run_in_thread(submission_id: str):
+    """Runs the full pipeline in a daemon thread — no Celery/Redis required."""
+    import django
+    django.setup()  # ensure Django is initialised for this thread
+
     from analyzer.models import ProfileSubmission, ProfileAnalysis, ProfileMatch
     from analyzer.instagram import analyze_profile
     from analyzer.matcher import build_feature_vector, find_best_match, get_match_reasons
     from analyzer.emails import send_match_email, send_waiting_email
+    from django.utils import timezone
 
     try:
         submission = ProfileSubmission.objects.get(id=submission_id)
@@ -26,7 +24,6 @@ def analyze_and_match(self, submission_id: str):
     submission.status = ProfileSubmission.STATUS_ANALYZING
     submission.save(update_fields=['status'])
 
-    # --- 1. Scrape and analyse ---
     analysis_data = analyze_profile(submission.instagram_url)
     if not analysis_data:
         submission.status = ProfileSubmission.STATUS_FAILED
@@ -50,23 +47,17 @@ def analyze_and_match(self, submission_id: str):
         },
     )
 
-    # --- 2. Find best match from existing profiles ---
     best_analysis, score = find_best_match(str(submission_id), feature_vector)
 
     if best_analysis:
         reasons = get_match_reasons(
-            {
-                'hashtag_categories': profile_analysis.hashtag_categories,
-                'locations': profile_analysis.locations,
-                'top_hashtags': profile_analysis.top_hashtags,
-            },
-            {
-                'hashtag_categories': best_analysis.hashtag_categories,
-                'locations': best_analysis.locations,
-                'top_hashtags': best_analysis.top_hashtags,
-            },
+            {'hashtag_categories': profile_analysis.hashtag_categories,
+             'locations': profile_analysis.locations,
+             'top_hashtags': profile_analysis.top_hashtags},
+            {'hashtag_categories': best_analysis.hashtag_categories,
+             'locations': best_analysis.locations,
+             'top_hashtags': best_analysis.top_hashtags},
         )
-
         match = ProfileMatch.objects.create(
             submission=submission,
             matched_with=best_analysis.submission,
@@ -75,78 +66,49 @@ def analyze_and_match(self, submission_id: str):
             match_reasons=reasons,
             emailed_at=timezone.now(),
         )
-
         send_match_email(submission, match)
         submission.status = ProfileSubmission.STATUS_MATCHED
-
     else:
-        # No suitable match yet — email user and wait for future profiles
         send_waiting_email(submission)
         submission.status = ProfileSubmission.STATUS_WAITING
-        # When the next profile comes in, re-check all waiting submissions
-        check_waiting_submissions.apply_async(args=[str(submission_id)], countdown=5)
+        # Retry matching for any previously waiting submissions
+        _retry_waiting(submission_id, profile_analysis)
 
     submission.save(update_fields=['status'])
 
 
-@shared_task
-def check_waiting_submissions(new_submission_id: str):
-    """
-    After a new profile is analysed, try to match it against every
-    submission that is still waiting for a look-alike.
-    """
+def _retry_waiting(new_id: str, new_analysis):
     from analyzer.models import ProfileSubmission, ProfileAnalysis, ProfileMatch
     from analyzer.matcher import cosine_similarity, get_match_reasons, MIN_SIMILARITY
     from analyzer.emails import send_match_email
+    from django.utils import timezone
 
-    try:
-        new_analysis = ProfileAnalysis.objects.get(submission_id=new_submission_id)
-    except ProfileAnalysis.DoesNotExist:
-        return
-
-    waiting_submissions = ProfileSubmission.objects.filter(
-        status=ProfileSubmission.STATUS_WAITING
-    ).exclude(id=new_submission_id)
-
-    for waiting_sub in waiting_submissions:
+    for waiting in ProfileSubmission.objects.filter(status=ProfileSubmission.STATUS_WAITING).exclude(id=new_id):
         try:
-            waiting_analysis = waiting_sub.analysis
+            wa = waiting.analysis
         except ProfileAnalysis.DoesNotExist:
             continue
-
-        already_matched = ProfileMatch.objects.filter(
-            submission=waiting_sub,
-            matched_with_id=new_submission_id,
-        ).exists()
-        if already_matched:
+        if ProfileMatch.objects.filter(submission=waiting, matched_with_id=new_id).exists():
             continue
-
-        score = cosine_similarity(waiting_analysis.feature_vector, new_analysis.feature_vector)
+        score = cosine_similarity(wa.feature_vector, new_analysis.feature_vector)
         if score < MIN_SIMILARITY:
             continue
-
         reasons = get_match_reasons(
-            {
-                'hashtag_categories': waiting_analysis.hashtag_categories,
-                'locations': waiting_analysis.locations,
-                'top_hashtags': waiting_analysis.top_hashtags,
-            },
-            {
-                'hashtag_categories': new_analysis.hashtag_categories,
-                'locations': new_analysis.locations,
-                'top_hashtags': new_analysis.top_hashtags,
-            },
+            {'hashtag_categories': wa.hashtag_categories, 'locations': wa.locations, 'top_hashtags': wa.top_hashtags},
+            {'hashtag_categories': new_analysis.hashtag_categories, 'locations': new_analysis.locations, 'top_hashtags': new_analysis.top_hashtags},
         )
-
+        from django.utils import timezone
         match = ProfileMatch.objects.create(
-            submission=waiting_sub,
-            matched_with=new_analysis.submission,
+            submission=waiting, matched_with=new_analysis.submission,
             matched_instagram_url=new_analysis.submission.instagram_url,
-            similarity_score=score,
-            match_reasons=reasons,
-            emailed_at=timezone.now(),
+            similarity_score=score, match_reasons=reasons, emailed_at=timezone.now(),
         )
+        send_match_email(waiting, match)
+        waiting.status = ProfileSubmission.STATUS_MATCHED
+        waiting.save(update_fields=['status'])
 
-        send_match_email(waiting_sub, match)
-        waiting_sub.status = ProfileSubmission.STATUS_MATCHED
-        waiting_sub.save(update_fields=['status'])
+
+def analyze_and_match(submission_id: str):
+    """Fire-and-forget: starts the pipeline in a background thread."""
+    t = threading.Thread(target=_run_in_thread, args=(submission_id,), daemon=True)
+    t.start()

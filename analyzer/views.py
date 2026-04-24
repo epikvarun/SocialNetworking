@@ -64,7 +64,7 @@ def submit(request):
         email=email,
         instagram_url=instagram_url,
     )
-    analyze_and_match.delay(str(submission.id))
+    analyze_and_match(str(submission.id))
 
     return JsonResponse({'success': True, 'submission_id': str(submission.id)})
 
